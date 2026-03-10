@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "liz-test-maze.fullname" . }}
+  labels:
+    {{- include "liz-test-maze.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "liz-test-maze.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "liz-test-maze.selectorLabels" . | nindent 8 }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+    spec:
+      containers:
+        - name: liz-test-maze
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: 8080
+              name: http
+          env:
+            - name: RESULTS_DIR
+              value: /results
+            - name: CONFIG_PATH
+              value: /config/tests.yaml
+            - name: RANCHER_HOST
+              value: {{ .Values.rancherHost | quote }}
+            {{- if .Values.lizToken }}
+            - name: LIZ_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "liz-test-maze.fullname" . }}-token
+                  key: LIZ_TOKEN
+            {{- end }}
+          volumeMounts:
+            - name: config
+              mountPath: /config
+              readOnly: true
+            - name: results
+              mountPath: /results
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          readinessProbe:
+            httpGet:
+              path: /api/config
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "liz-test-maze.fullname" . }}-config
+        - name: results
+          {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ include "liz-test-maze.fullname" . }}-results
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

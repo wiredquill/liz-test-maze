@@ -1,0 +1,12 @@
+apiVersion: v2
+name: liz-test-maze
+description: Automated benchmark for the Rancher AI agent (Liz)
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords:
+  - rancher
+  - ai
+  - testing
+  - benchmark
+home: https://github.com/your-org/liz-test-maze

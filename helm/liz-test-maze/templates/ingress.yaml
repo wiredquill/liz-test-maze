@@ -1,0 +1,27 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "liz-test-maze.fullname" . }}
+  labels:
+    {{- include "liz-test-maze.labels" . | nindent 4 }}
+spec:
+  {{- if .Values.ingress.className }}
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- end }}
+  {{- if .Values.ingress.tls }}
+  tls:
+    {{- toYaml .Values.ingress.tls | nindent 4 }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.ingress.host | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "liz-test-maze.fullname" . }}
+                port:
+                  name: http
+{{- end }}

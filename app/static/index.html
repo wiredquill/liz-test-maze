@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Liz Test Maze</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #0d1117;
+    color: #c9d1d9;
+    min-height: 100vh;
+  }
+
+  header {
+    background: #161b22;
+    border-bottom: 1px solid #30363d;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  header h1 { margin: 0; font-size: 1.1rem; color: #f0f6fc; }
+  header .subtitle { font-size: 0.8rem; color: #8b949e; margin-top: 2px; }
+  .llm-badge {
+    margin-left: auto;
+    background: #21262d;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 0.78rem;
+    color: #8b949e;
+  }
+  .llm-badge strong { color: #58a6ff; }
+
+  .main { display: grid; grid-template-columns: 340px 1fr; gap: 0; height: calc(100vh - 57px); }
+
+  /* Left panel */
+  .panel-left {
+    background: #161b22;
+    border-right: 1px solid #30363d;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .section-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #8b949e;
+    margin-bottom: 6px;
+  }
+
+  .form-group { display: flex; flex-direction: column; gap: 4px; }
+  .form-group label { font-size: 0.82rem; color: #c9d1d9; }
+  .form-group input {
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    color: #c9d1d9;
+    font-size: 0.85rem;
+    padding: 7px 10px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .form-group input:focus { border-color: #58a6ff; }
+
+  .tags-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .tags-grid .form-group label { font-size: 0.75rem; color: #8b949e; }
+
+  .tests-list { display: flex; flex-direction: column; gap: 4px; }
+  .test-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 7px 8px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.1s;
+    border: 1px solid transparent;
+  }
+  .test-item:hover { background: #21262d; border-color: #30363d; }
+  .test-item input[type=checkbox] { margin-top: 2px; accent-color: #58a6ff; flex-shrink: 0; }
+  .test-name { font-size: 0.82rem; color: #c9d1d9; font-weight: 500; }
+  .test-msg { font-size: 0.73rem; color: #8b949e; margin-top: 1px; line-height: 1.3; }
+  .test-reps { font-size: 0.7rem; color: #58a6ff; margin-top: 2px; }
+
+  .select-row { display: flex; gap: 8px; margin-bottom: 6px; }
+  .btn-link { background: none; border: none; color: #58a6ff; font-size: 0.78rem; cursor: pointer; padding: 2px 0; }
+  .btn-link:hover { text-decoration: underline; }
+
+  .btn-start {
+    background: #238636;
+    border: 1px solid #2ea043;
+    border-radius: 6px;
+    color: white;
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 10px;
+    cursor: pointer;
+    transition: background 0.15s;
+    width: 100%;
+  }
+  .btn-start:hover { background: #2ea043; }
+  .btn-start:disabled { background: #21262d; border-color: #30363d; color: #8b949e; cursor: not-allowed; }
+
+  /* Right panel */
+  .panel-right {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 0;
+    background: #161b22;
+    border-bottom: 1px solid #30363d;
+    padding: 0 16px;
+  }
+  .tab {
+    padding: 10px 16px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    color: #8b949e;
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+  }
+  .tab:hover { color: #c9d1d9; }
+  .tab.active { color: #f0f6fc; border-bottom-color: #58a6ff; }
+
+  .tab-content { flex: 1; overflow: hidden; display: none; }
+  .tab-content.active { display: flex; flex-direction: column; }
+
+  /* Live log */
+  .log-toolbar {
+    background: #161b22;
+    border-bottom: 1px solid #30363d;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.8rem;
+    color: #8b949e;
+  }
+  .status-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #8b949e; flex-shrink: 0;
+  }
+  .status-dot.running { background: #3fb950; animation: pulse 1.2s ease-in-out infinite; }
+  .status-dot.done { background: #3fb950; }
+  .status-dot.error { background: #f85149; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+  #log-output {
+    flex: 1;
+    overflow-y: auto;
+    background: #0d1117;
+    padding: 12px 16px;
+    font-family: 'SF Mono', 'Consolas', monospace;
+    font-size: 0.78rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-all;
+    color: #c9d1d9;
+  }
+  #log-output .line-ok { color: #3fb950; }
+  #log-output .line-fail { color: #f85149; }
+  #log-output .line-header { color: #58a6ff; font-weight: bold; }
+  #log-output .line-summary { color: #d2a679; }
+  #log-output .line-sep { color: #30363d; }
+
+  /* Results table */
+  .results-panel { flex: 1; overflow-y: auto; padding: 16px; }
+
+  .run-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .run-card-header {
+    background: #21262d;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.85rem;
+  }
+  .run-card-header strong { color: #f0f6fc; }
+  .run-card-header .meta { color: #8b949e; font-size: 0.78rem; }
+  .run-card-header .badge {
+    margin-left: auto;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .badge-done { background: #1c4528; color: #3fb950; }
+  .badge-running { background: #1c3048; color: #58a6ff; }
+  .badge-error { background: #3c1a1a; color: #f85149; }
+
+  .timing-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+  .timing-table th { padding: 6px 12px; text-align: left; background: #0d1117; color: #8b949e; font-weight: 600; border-bottom: 1px solid #30363d; }
+  .timing-table td { padding: 5px 12px; border-bottom: 1px solid #21262d; }
+  .timing-table tr:last-child td { border-bottom: none; }
+  .timing-table tr:hover td { background: #21262d; }
+  .ok-text { color: #3fb950; }
+  .fail-text { color: #f85149; }
+
+  .no-runs { padding: 40px; text-align: center; color: #8b949e; font-size: 0.9rem; }
+
+  .btn-report {
+    background: #21262d;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    color: #c9d1d9;
+    font-size: 0.8rem;
+    padding: 6px 12px;
+    cursor: pointer;
+    margin-left: 8px;
+  }
+  .btn-report:hover { background: #30363d; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Liz Test Maze</h1>
+    <div class="subtitle">Rancher AI Agent Benchmark</div>
+  </div>
+  <div class="llm-badge" id="llm-badge">Loading model info...</div>
+</header>
+
+<div class="main">
+
+  <!-- Left: Config panel -->
+  <div class="panel-left">
+
+    <div>
+      <div class="section-label">Run Label</div>
+      <div class="form-group">
+        <label>Label</label>
+        <input type="text" id="label" placeholder="e.g. qwen3.5-27b" />
+      </div>
+    </div>
+
+    <div>
+      <div class="section-label">Tags (optional)</div>
+      <div class="tags-grid">
+        <div class="form-group">
+          <label>GPU</label>
+          <input type="text" id="tag-gpu" placeholder="e.g. H100" />
+        </div>
+        <div class="form-group">
+          <label>Window</label>
+          <input type="text" id="tag-window" placeholder="e.g. 32k" />
+        </div>
+        <div class="form-group">
+          <label>Notes</label>
+          <input type="text" id="tag-notes" placeholder="e.g. quantized" />
+        </div>
+        <div class="form-group">
+          <label>Custom</label>
+          <input type="text" id="tag-custom" placeholder="key:value" />
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-label">Tests</div>
+      <div class="select-row">
+        <button class="btn-link" onclick="selectAll()">Select all</button>
+        <button class="btn-link" onclick="selectNone()">None</button>
+      </div>
+      <div class="tests-list" id="tests-list">
+        <div style="color:#8b949e;font-size:.8rem">Loading tests...</div>
+      </div>
+    </div>
+
+    <div>
+      <button class="btn-start" id="start-btn" onclick="startRun()">▶ Start Test Run</button>
+    </div>
+
+  </div>
+
+  <!-- Right: Output panel -->
+  <div class="panel-right">
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('live')">Live Output</button>
+      <button class="tab" onclick="showTab('results')">
+        Results
+        <span id="results-count" style="margin-left:4px;background:#21262d;border-radius:10px;padding:1px 6px;font-size:.7rem"></span>
+      </button>
+    </div>
+
+    <!-- Live tab -->
+    <div class="tab-content active" id="tab-live">
+      <div class="log-toolbar">
+        <div class="status-dot" id="status-dot"></div>
+        <span id="status-text">Idle — start a run to see live output</span>
+        <button class="btn-report" onclick="openReport()" style="margin-left:auto">View HTML Report</button>
+      </div>
+      <div id="log-output"></div>
+    </div>
+
+    <!-- Results tab -->
+    <div class="tab-content" id="tab-results">
+      <div class="results-panel" id="results-panel">
+        <div class="no-runs">No runs yet. Start a test run to see results here.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let currentRunId = null;
+let currentEventSource = null;
+let config = null;
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+
+async function init() {
+  await Promise.all([loadConfig(), loadLlmBadge(), loadRuns()]);
+}
+
+async function loadConfig() {
+  try {
+    const res = await fetch('/api/config');
+    config = await res.json();
+    renderTests(config.tests);
+  } catch (e) {
+    document.getElementById('tests-list').innerHTML = `<div style="color:#f85149">Failed to load config: ${e}</div>`;
+  }
+}
+
+async function loadLlmBadge() {
+  try {
+    const res = await fetch('/api/llm');
+    const llm = await res.json();
+    const active = llm.ACTIVE_LLM || '?';
+    const model = llm.OLLAMA_MODEL || llm.OPENAI_MODEL || llm.GEMINI_MODEL || '?';
+    document.getElementById('llm-badge').innerHTML = `<strong>${escHtml(model)}</strong> <span style="color:#8b949e">via ${escHtml(active)}</span>`;
+  } catch (e) {
+    document.getElementById('llm-badge').textContent = 'Model info unavailable';
+  }
+}
+
+function renderTests(tests) {
+  const list = document.getElementById('tests-list');
+  list.innerHTML = '';
+  tests.forEach(t => {
+    const div = document.createElement('div');
+    div.className = 'test-item';
+    div.innerHTML = `
+      <input type="checkbox" id="test-${escHtml(t.name)}" value="${escHtml(t.name)}" checked>
+      <div>
+        <div class="test-name">${escHtml(t.name)}</div>
+        <div class="test-msg">${escHtml(t.message.slice(0, 80))}${t.message.length > 80 ? '…' : ''}</div>
+        <div class="test-reps">${t.repetitions}× reps</div>
+      </div>
+    `;
+    div.querySelector('input').addEventListener('change', () => {});
+    div.addEventListener('click', e => {
+      if (e.target.tagName !== 'INPUT') {
+        const cb = div.querySelector('input');
+        cb.checked = !cb.checked;
+      }
+    });
+    list.appendChild(div);
+  });
+}
+
+function selectAll() {
+  document.querySelectorAll('#tests-list input[type=checkbox]').forEach(cb => cb.checked = true);
+}
+function selectNone() {
+  document.querySelectorAll('#tests-list input[type=checkbox]').forEach(cb => cb.checked = false);
+}
+
+// ── Start run ─────────────────────────────────────────────────────────────────
+
+async function startRun() {
+  const label = document.getElementById('label').value.trim();
+  const tags = {};
+  const tagFields = { gpu: 'tag-gpu', window: 'tag-window', notes: 'tag-notes' };
+  for (const [key, id] of Object.entries(tagFields)) {
+    const val = document.getElementById(id).value.trim();
+    if (val) tags[key] = val;
+  }
+  const customTag = document.getElementById('tag-custom').value.trim();
+  if (customTag && customTag.includes(':')) {
+    const [k, ...rest] = customTag.split(':');
+    tags[k] = rest.join(':');
+  }
+
+  const selected = Array.from(document.querySelectorAll('#tests-list input[type=checkbox]:checked')).map(cb => cb.value);
+  const allTests = config ? config.tests.map(t => t.name) : [];
+  const selectedTests = selected.length === allTests.length ? [] : selected;
+
+  if (selected.length === 0) {
+    alert('Select at least one test.');
+    return;
+  }
+
+  // Switch to live tab and clear log
+  showTab('live');
+  clearLog();
+  setStatus('running', 'Starting run…');
+
+  const btn = document.getElementById('start-btn');
+  btn.disabled = true;
+
+  try {
+    const res = await fetch('/api/runs', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ label, tags, selected_tests: selectedTests }),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || res.statusText);
+    }
+    const { run_id } = await res.json();
+    currentRunId = run_id;
+    streamLog(run_id);
+  } catch (e) {
+    setStatus('error', `Failed to start: ${e.message}`);
+    btn.disabled = false;
+  }
+}
+
+function streamLog(runId) {
+  if (currentEventSource) currentEventSource.close();
+
+  const es = new EventSource(`/api/runs/${runId}/stream`);
+  currentEventSource = es;
+
+  es.onmessage = (e) => {
+    const data = JSON.parse(e.data);
+    appendLine(data.line);
+  };
+
+  es.addEventListener('done', (e) => {
+    const data = JSON.parse(e.data);
+    const status = data.status === 'done' ? 'done' : 'error';
+    setStatus(status, status === 'done' ? 'Run complete' : `Error: ${data.error}`);
+    document.getElementById('start-btn').disabled = false;
+    es.close();
+    loadRuns();
+    loadLlmBadge();
+  });
+
+  es.onerror = () => {
+    setStatus('error', 'Stream disconnected');
+    document.getElementById('start-btn').disabled = false;
+    es.close();
+    loadRuns();
+  };
+
+  setStatus('running', 'Running tests…');
+}
+
+// ── Log rendering ─────────────────────────────────────────────────────────────
+
+function clearLog() {
+  document.getElementById('log-output').innerHTML = '';
+}
+
+function appendLine(line) {
+  const out = document.getElementById('log-output');
+  const span = document.createElement('span');
+  let cls = '';
+  if (line.includes('[OK]')) cls = 'line-ok';
+  else if (line.includes('[FAIL]') || line.startsWith('ERROR')) cls = 'line-fail';
+  else if (line.startsWith('[') && line.includes('/')) cls = 'line-header';
+  else if (line.startsWith('  Summary:') || line.startsWith('  TTFT:') || line.startsWith('  Total:')) cls = 'line-summary';
+  else if (line.startsWith('==')) cls = 'line-sep';
+
+  span.className = cls;
+  span.textContent = line + '\n';
+  out.appendChild(span);
+  out.scrollTop = out.scrollHeight;
+}
+
+function setStatus(state, text) {
+  document.getElementById('status-dot').className = `status-dot ${state}`;
+  document.getElementById('status-text').textContent = text;
+}
+
+// ── Results tab ───────────────────────────────────────────────────────────────
+
+async function loadRuns() {
+  try {
+    const res = await fetch('/api/runs');
+    const runs = await res.json();
+    renderRuns(runs);
+    const count = runs.filter(r => r.status === 'done').length;
+    document.getElementById('results-count').textContent = count || '';
+  } catch (e) {
+    console.error('Failed to load runs', e);
+  }
+}
+
+function renderRuns(runs) {
+  const panel = document.getElementById('results-panel');
+  if (runs.length === 0) {
+    panel.innerHTML = '<div class="no-runs">No runs yet. Start a test run to see results here.</div>';
+    return;
+  }
+
+  panel.innerHTML = runs.map(run => {
+    const summary = run.summary;
+    const llm = summary?.llm || {};
+    const questions = summary?.questions || [];
+    const model = llm.model || '—';
+    const statusBadge = `<span class="badge badge-${run.status}">${run.status}</span>`;
+    const date = (run.started_at || '').slice(0, 16).replace('T', ' ');
+
+    let timingRows = '';
+    if (questions.length > 0) {
+      timingRows = `
+        <table class="timing-table">
+          <thead><tr><th>Test</th><th>Success</th><th>TTFT avg</th><th>Total avg</th></tr></thead>
+          <tbody>
+            ${questions.map(q => {
+              const ok = q.success_count === q.repetitions;
+              const ttft = q.ttft_stats?.avg != null ? q.ttft_stats.avg.toFixed(1) + 's' : '—';
+              const total = q.total_time_stats?.avg != null ? q.total_time_stats.avg.toFixed(1) + 's' : '—';
+              return `<tr>
+                <td>${escHtml(q.name)}</td>
+                <td class="${ok ? 'ok-text' : 'fail-text'}">${q.success_count}/${q.repetitions}</td>
+                <td>${ttft}</td>
+                <td>${total}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>`;
+    }
+
+    return `
+      <div class="run-card">
+        <div class="run-card-header">
+          <div>
+            <strong>${escHtml(run.label || run.id)}</strong>
+            <div class="meta">${escHtml(model)} · ${date}</div>
+          </div>
+          ${statusBadge}
+        </div>
+        ${timingRows}
+      </div>`;
+  }).join('');
+}
+
+// ── Tabs ──────────────────────────────────────────────────────────────────────
+
+function showTab(name) {
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    const tabs = ['live', 'results'];
+    t.classList.toggle('active', tabs[i] === name);
+  });
+  document.querySelectorAll('.tab-content').forEach(c => {
+    c.classList.toggle('active', c.id === `tab-${name}`);
+  });
+  if (name === 'results') loadRuns();
+}
+
+function openReport() {
+  window.open('/api/report', '_blank');
+}
+
+// ── Utils ─────────────────────────────────────────────────────────────────────
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>

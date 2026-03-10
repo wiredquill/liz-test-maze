@@ -1,0 +1,85 @@
+# Rancher install wizard questions for liz-test-maze
+# These appear in the Rancher UI when installing via Apps & Marketplace.
+
+questions:
+  - variable: rancherHost
+    label: Rancher Host
+    description: "Hostname of the Rancher instance where Liz is deployed (e.g. liz.dna-42.com)"
+    type: string
+    required: true
+    group: Connection
+
+  - variable: lizToken
+    label: Rancher API Token
+    description: "Bearer token for authenticating with the Rancher API (from ~/.kube/liz.yaml or Rancher UI)"
+    type: password
+    required: true
+    group: Connection
+
+  - variable: clusterId
+    label: Target Cluster Name
+    description: "Human-readable display name of the cluster to test against (e.g. dev-ai)"
+    type: string
+    default: dev-ai
+    required: true
+    group: Connection
+
+  - variable: agentId
+    label: AI Agent ID
+    description: "Name of the AIAgentConfig CRD (default: rancher)"
+    type: string
+    default: rancher
+    group: Connection
+
+  - variable: brokenNamespace
+    label: Broken Apps Namespace
+    description: "Namespace where the broken test deployments live"
+    type: string
+    default: broken
+    group: Tests
+
+  - variable: defaultRepetitions
+    label: Default Repetitions
+    description: "How many times to run each test question (for consistency measurement)"
+    type: int
+    default: 3
+    min: 1
+    max: 10
+    group: Tests
+
+  - variable: delayBetweenQueries
+    label: Delay Between Queries (seconds)
+    description: "Pause between consecutive queries in the same test"
+    type: int
+    default: 2
+    min: 0
+    max: 30
+    group: Tests
+
+  - variable: persistence.enabled
+    label: Enable Persistent Storage
+    description: "Store test results on a PersistentVolumeClaim so they survive pod restarts"
+    type: boolean
+    default: true
+    group: Storage
+
+  - variable: persistence.size
+    label: Results Storage Size
+    description: "Size of the PVC for storing test results"
+    type: string
+    default: 5Gi
+    group: Storage
+
+  - variable: ingress.enabled
+    label: Enable Ingress
+    description: "Expose the web UI via an Ingress resource"
+    type: boolean
+    default: false
+    group: Networking
+
+  - variable: ingress.host
+    label: Ingress Hostname
+    description: "Hostname for the Ingress (e.g. liz-test.example.com)"
+    type: string
+    show_if: ingress.enabled=true
+    group: Networking

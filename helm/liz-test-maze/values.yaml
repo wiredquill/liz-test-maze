@@ -1,0 +1,64 @@
+# Liz Test Maze — Helm values
+# Override any of these in your own values.yaml or via --set
+
+image:
+  repository: ghcr.io/your-org/liz-test-maze
+  tag: latest
+  pullPolicy: IfNotPresent
+
+# Number of replicas (1 is recommended — results PVC is single-consumer)
+replicaCount: 1
+
+service:
+  type: ClusterIP
+  port: 8080
+
+ingress:
+  enabled: false
+  # className: nginx
+  # host: liz-test.example.com
+  # tls: []
+
+# Persistent storage for test results
+persistence:
+  enabled: true
+  storageClass: ""      # leave empty to use cluster default
+  size: 5Gi
+  accessMode: ReadWriteOnce
+
+# ── Liz connection config ──────────────────────────────────────────────────────
+
+# Rancher host where the AI agent is reachable
+rancherHost: "liz.dna-42.com"
+
+# Rancher API token (used to authenticate WebSocket connections)
+# You can provide it here or mount a Secret manually — see secret.yaml
+lizToken: ""
+
+# ── Test configuration ─────────────────────────────────────────────────────────
+# These values are written into the tests.yaml ConfigMap.
+# You can also edit the ConfigMap directly after deploy — changes are hot-reloaded.
+
+agentId: rancher
+clusterId: dev-ai          # human-readable cluster display name
+brokenNamespace: broken
+defaultRepetitions: 3
+delayBetweenQueries: 2
+
+# Full tests list — rendered into config/tests.yaml ConfigMap.
+# Override this in your values.yaml or edit the ConfigMap post-deploy.
+# Set to null to use the built-in tests.yaml from the image instead.
+testsConfig: null
+
+# ── Resource requests/limits ───────────────────────────────────────────────────
+resources: {}
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # limits:
+  #   cpu: 500m
+  #   memory: 512Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
