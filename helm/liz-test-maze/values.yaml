@@ -2,7 +2,7 @@
 # Override any of these in your own values.yaml or via --set
 
 image:
-  repository: ghcr.io/your-org/liz-test-maze
+  repository: ghcr.io/wiredquill/liz-test-maze
   tag: latest
   pullPolicy: IfNotPresent
 
