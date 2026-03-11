@@ -3,7 +3,7 @@
 
 image:
   repository: ghcr.io/wiredquill/liz-test-maze
-  tag: latest
+  tag: main
   pullPolicy: IfNotPresent
 
 # Number of replicas (1 is recommended — results PVC is single-consumer)
