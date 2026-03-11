@@ -2,6 +2,22 @@ apiVersion: v1
 entries:
   liz-test-maze:
   - apiVersion: v2
+    appVersion: 0.1.1
+    created: "2026-03-11T20:18:21.989987043Z"
+    description: Automated benchmark for the Rancher AI agent (Liz)
+    digest: 4bec529ab2e35fe7f3d923556311c956467e25cab8317db3e85a53ea1af3cbc6
+    home: https://github.com/wiredquill/liz-test-maze
+    keywords:
+    - rancher
+    - ai
+    - testing
+    - benchmark
+    name: liz-test-maze
+    type: application
+    urls:
+    - https://github.com/wiredquill/liz-test-maze/releases/download/liz-test-maze-0.1.1/liz-test-maze-0.1.1.tgz
+    version: 0.1.1
+  - apiVersion: v2
     appVersion: 0.1.0
     created: "2026-03-10T21:20:06.462610235Z"
     description: Automated benchmark for the Rancher AI agent (Liz)
@@ -17,4 +33,4 @@ entries:
     urls:
     - https://github.com/wiredquill/liz-test-maze/releases/download/liz-test-maze-0.1.0/liz-test-maze-0.1.0.tgz
     version: 0.1.0
-generated: "2026-03-10T21:20:06.462617125Z"
+generated: "2026-03-11T20:18:21.990000068Z"
