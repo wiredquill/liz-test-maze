@@ -2,6 +2,23 @@ apiVersion: v1
 entries:
   liz-demo-apps:
   - apiVersion: v2
+    appVersion: 0.1.1
+    created: "2026-03-13T16:35:54.373589001Z"
+    description: Broken Kubernetes deployments for testing the Rancher AI agent (Liz)
+    digest: 5c0d1701ad0d1b19203cfd3e914b68c61ced618760d8bc41e1205b2a68981adb
+    home: https://github.com/wiredquill/liz-test-maze
+    keywords:
+    - rancher
+    - ai
+    - testing
+    - demo
+    - broken
+    name: liz-demo-apps
+    type: application
+    urls:
+    - https://github.com/wiredquill/liz-test-maze/releases/download/liz-demo-apps-0.1.1/liz-demo-apps-0.1.1.tgz
+    version: 0.1.1
+  - apiVersion: v2
     appVersion: 0.1.0
     created: "2026-03-13T00:00:59.681135176Z"
     description: Broken Kubernetes deployments for testing the Rancher AI agent (Liz)
@@ -67,4 +84,4 @@ entries:
     urls:
     - https://github.com/wiredquill/liz-test-maze/releases/download/liz-test-maze-0.1.0/liz-test-maze-0.1.0.tgz
     version: 0.1.0
-generated: "2026-03-13T00:00:59.681152408Z"
+generated: "2026-03-13T16:35:54.373603372Z"
