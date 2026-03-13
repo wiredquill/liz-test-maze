@@ -1,0 +1,96 @@
+questions:
+  - variable: namespace
+    label: Namespace
+    description: "Kubernetes namespace to deploy the demo apps into. Must exist or be created before installing."
+    type: string
+    default: broken
+    required: true
+    group: General
+
+  - variable: demos.crashLoop.enabled
+    label: CrashLoopBackOff — Container exits immediately
+    description: |
+      Deploys an Alpine container that runs a single echo command and exits.
+      Because the container has no long-running process, Kubernetes keeps restarting
+      it with exponential backoff — the classic CrashLoopBackOff scenario.
+      Great for testing: root cause analysis, log inspection, restart diagnosis.
+    type: boolean
+    default: true
+    group: Demo Apps
+
+  - variable: demos.brokenImage.enabled
+    label: ImagePullBackOff — Invalid image tag
+    description: |
+      Deploys an Nginx container with a non-existent image tag (nginx:this-tag-does-not-exist).
+      The pod will be stuck in ImagePullBackOff because the image cannot be pulled from the registry.
+      Great for testing: image pull error diagnosis, registry troubleshooting guidance.
+    type: boolean
+    default: true
+    group: Demo Apps
+
+  - variable: demos.impossibleSchedule.enabled
+    label: Pending — Impossible node selector
+    description: |
+      Deploys an Nginx pod with a nodeSelector requiring disk=ssd.
+      Unless a node in your cluster has this label, the pod will remain
+      in Pending state indefinitely — the scheduler cannot find a suitable node.
+      Great for testing: scheduling failure analysis, node affinity diagnosis.
+    type: boolean
+    default: true
+    group: Demo Apps
+
+  - variable: demos.missingConfig.enabled
+    label: CreateContainerConfigError — Missing ConfigMap
+    description: |
+      Deploys an Nginx container that tries to load environment variables from a
+      ConfigMap named 'my-app-config' that does not exist.
+      The pod will fail at container creation with CreateContainerConfigError.
+      Great for testing: missing dependency diagnosis, configuration error detection.
+    type: boolean
+    default: true
+    group: Demo Apps
+
+  - variable: demos.readonlyFilesystem.enabled
+    label: CrashLoopBackOff — Read-only volume mount
+    description: |
+      Deploys an Alpine container that tries to write a file to a volume mounted
+      as read-only. The write fails immediately, the container exits, and Kubernetes
+      restarts it in a loop.
+      Great for testing: filesystem permission errors, volume mount misconfiguration.
+    type: boolean
+    default: true
+    group: Demo Apps
+
+  - variable: demos.badProbe.enabled
+    label: Liveness probe failure — Wrong port
+    description: |
+      Deploys an Nginx container (which listens on port 80) with a liveness probe
+      configured to check port 8080. The probe fails every time, causing Kubernetes
+      to repeatedly kill and restart the container.
+      Great for testing: probe misconfiguration diagnosis, health check analysis.
+    type: boolean
+    default: true
+    group: Demo Apps
+
+  - variable: demos.resourceHog.enabled
+    label: Over-provisioned — Resource rightsizing candidate
+    description: |
+      Deploys an idle Nginx container with 2 CPU cores and 2Gi memory requested and limited.
+      The container uses almost none of these resources in practice.
+      This is the primary demo for the resource rightsizing benchmark — Liz should
+      identify the waste and suggest lower values based on actual usage.
+    type: boolean
+    default: true
+    group: Demo Apps
+
+  - variable: demos.redisPinger.enabled
+    label: CrashLoopBackOff — Missing Redis service (optional)
+    description: |
+      Deploys a Redis pinger app that tries to connect to a Redis service named
+      'redis-service' in the same namespace. Without a Redis instance running,
+      the app crashes and restarts in a loop.
+      Only enable this if you want to test service dependency failure scenarios.
+      Disabled by default.
+    type: boolean
+    default: false
+    group: Demo Apps

@@ -1,0 +1,30 @@
+# Liz Demo Apps — broken Kubernetes deployments for AI agent testing
+# Each demo can be individually enabled or disabled.
+
+# Namespace to deploy all demos into
+namespace: broken
+
+demos:
+  crashLoop:
+    enabled: true
+
+  brokenImage:
+    enabled: true
+
+  impossibleSchedule:
+    enabled: true
+
+  missingConfig:
+    enabled: true
+
+  readonlyFilesystem:
+    enabled: true
+
+  badProbe:
+    enabled: true
+
+  resourceHog:
+    enabled: true
+
+  redisPinger:
+    enabled: false   # Requires a running Redis service — disabled by default

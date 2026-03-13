@@ -1,0 +1,32 @@
+{{- if .Values.demos.redisPinger.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-pinger-deployment
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: redis-pinger
+    demo: liz-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis-pinger
+  template:
+    metadata:
+      labels:
+        app: redis-pinger
+        demo: liz-test
+    spec:
+      containers:
+      - name: redis-pinger
+        image: jpgouin/redis-pinger:latest
+        env:
+        # ERROR: Expects a Redis service named 'redis-service' in the same namespace.
+        # Without it, the app crashes and restarts in a loop.
+        - name: REDIS_HOST
+          value: "redis-service"
+        - name: REDIS_PORT
+          value: "6379"
+      restartPolicy: Always
+{{- end }}

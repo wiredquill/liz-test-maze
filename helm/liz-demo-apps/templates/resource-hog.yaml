@@ -1,0 +1,36 @@
+{{- if .Values.demos.resourceHog.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: resource-hog-deployment
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: resource-hog
+    demo: liz-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: resource-hog
+  template:
+    metadata:
+      labels:
+        app: resource-hog
+        demo: liz-test
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+        # RESOURCE OVER-PROVISIONING: Idle Nginx requesting 2 full CPU cores and 2Gi memory.
+        # Actual usage is typically <5m CPU and <10Mi memory.
+        # Used to test Liz's resource rightsizing analysis.
+        resources:
+          requests:
+            cpu: "2000m"
+            memory: "2Gi"
+          limits:
+            cpu: "2000m"
+            memory: "2Gi"
+{{- end }}

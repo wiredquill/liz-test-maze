@@ -1,0 +1,28 @@
+{{- if .Values.demos.impossibleSchedule.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: impossible-schedule-deployment
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: impossible-schedule
+    demo: liz-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: impossible-schedule
+  template:
+    metadata:
+      labels:
+        app: impossible-schedule
+        demo: liz-test
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+      # ERROR: Requires a node labelled disk=ssd.
+      # If no such node exists, the pod stays Pending forever.
+      nodeSelector:
+        disk: ssd
+{{- end }}

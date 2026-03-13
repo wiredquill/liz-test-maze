@@ -1,0 +1,27 @@
+{{- if .Values.demos.crashLoop.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crash-loop-deployment
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: crash-loop
+    demo: liz-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: crash-loop
+  template:
+    metadata:
+      labels:
+        app: crash-loop
+        demo: liz-test
+    spec:
+      containers:
+      - name: alpine-sleeper
+        image: alpine:latest
+        # ERROR: This command finishes immediately.
+        # A container needs a long-running process to stay alive.
+        command: ["/bin/sh", "-c", "echo 'I finished my job and now I exit!'"]
+{{- end }}

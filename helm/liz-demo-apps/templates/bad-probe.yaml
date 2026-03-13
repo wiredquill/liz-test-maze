@@ -1,0 +1,34 @@
+{{- if .Values.demos.badProbe.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bad-probe-deployment
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: bad-probe
+    demo: liz-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bad-probe
+  template:
+    metadata:
+      labels:
+        app: bad-probe
+        demo: liz-test
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+        # ERROR: Nginx listens on port 80, but the probe checks port 8080.
+        # The probe fails every time, causing Kubernetes to kill and restart the container.
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+{{- end }}

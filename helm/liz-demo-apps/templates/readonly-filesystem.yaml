@@ -1,0 +1,34 @@
+{{- if .Values.demos.readonlyFilesystem.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: readonly-write-deployment
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: readonly-write
+    demo: liz-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: readonly-write
+  template:
+    metadata:
+      labels:
+        app: readonly-write
+        demo: liz-test
+    spec:
+      containers:
+      - name: writer
+        image: alpine:latest
+        # ERROR: Tries to write to a volume mounted as read-only.
+        # The write fails, the container exits, Kubernetes restarts it in a loop.
+        command: ["/bin/sh", "-c", "touch /app/data/test.txt && sleep 3600"]
+        volumeMounts:
+        - name: data-volume
+          mountPath: /app/data
+          readOnly: true
+      volumes:
+      - name: data-volume
+        emptyDir: {}
+{{- end }}

@@ -1,0 +1,27 @@
+{{- if .Values.demos.brokenImage.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: broken-image-deployment
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: broken-image
+    demo: liz-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: broken-image
+  template:
+    metadata:
+      labels:
+        app: broken-image
+        demo: liz-test
+    spec:
+      containers:
+      - name: nginx
+        # ERROR: This image tag does not exist in Docker Hub.
+        image: nginx:this-tag-does-not-exist
+        ports:
+        - containerPort: 80
+{{- end }}

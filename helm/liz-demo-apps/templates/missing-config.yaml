@@ -1,0 +1,29 @@
+{{- if .Values.demos.missingConfig.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: missing-config-deployment
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: missing-config
+    demo: liz-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: missing-config
+  template:
+    metadata:
+      labels:
+        app: missing-config
+        demo: liz-test
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        envFrom:
+        # ERROR: ConfigMap 'my-app-config' does not exist.
+        # Container creation fails immediately with CreateContainerConfigError.
+        - configMapRef:
+            name: my-app-config
+{{- end }}
